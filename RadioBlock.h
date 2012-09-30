@@ -227,11 +227,11 @@ public:
 	//RadioBlock_Status_t sendData(uint16_t dest, uint8_t * dataPtr, uint8_t dataLen);
 	//receiveDataPoll();
 	//receiveDataCallback();
-	//setAddress(uint16_t address);
+	void setAddress(uint16_t address);
 	//uint16_t getAddress();
-	//setPanID(uint16_t panid);
+	void setPanID(uint16_t panid);
 	//uint16_t getPanID(void);
-	//setChannel(uint8_t channel);
+	void setChannel(uint8_t channel);
 	//uint8_t getChannel();
 	
 	void setupMessage(uint16_t dest);

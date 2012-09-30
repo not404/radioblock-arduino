@@ -210,9 +210,9 @@ void RadioBlock::SendReq_uint16(RadioBlock_CommandId_t command, uint16_t data) {
 	resetResponse();
 	_request.setCommandId(command);
 	_request.setPayload(_txFrameBuffer);
-	_request.setPayloadLength(2);
-	_txFrameBuffer[2]= ( data >> 8) & 0xff;
-	_txFrameBuffer[3]= ( data >> 0) & 0xff;
+	_request.setPayloadLength(2);	
+	_txFrameBuffer[0]= ( data >> 0) & 0xff;
+	_txFrameBuffer[1]= ( data >> 8) & 0xff;
 	send(_request);
 }
 
@@ -221,10 +221,10 @@ void RadioBlock::SendReq_uint32(RadioBlock_CommandId_t command, uint32_t data) {
 	_request.setCommandId(command);
 	_request.setPayload(_txFrameBuffer);
 	_request.setPayloadLength(4);
-	_txFrameBuffer[0]= ( data >> 24) & 0xff;
-	_txFrameBuffer[1]= ( data >> 16) & 0xff;
-	_txFrameBuffer[2]= ( data >> 8) & 0xff;
-	_txFrameBuffer[3]= ( data >> 0) & 0xff;
+	_txFrameBuffer[3]= ( data >> 24) & 0xff;
+	_txFrameBuffer[2]= ( data >> 16) & 0xff;
+	_txFrameBuffer[1]= ( data >> 8) & 0xff;
+	_txFrameBuffer[0]= ( data >> 0) & 0xff;
 	send(_request);
 }
 
@@ -242,6 +242,18 @@ void RadioBlock::toggleLED(void) {
 
 void RadioBlock::sleepRequest(uint32_t sleepTimeMilliseconds) {
 	SendReq_uint32(APP_COMMAND_SLEEP_REQ, sleepTimeMilliseconds);
+}
+
+void RadioBlock::setAddress(uint16_t address) {
+	SendReq_uint16(APP_COMMAND_SET_ADDR_REQ, address);
+}
+
+void RadioBlock::setPanID(uint16_t panid) {
+	SendReq_uint16(APP_COMMAND_SET_ADDR_REQ, panid);
+}
+
+void RadioBlock::setChannel(uint8_t channel) {
+	SendReq_uint8(APP_COMMAND_SET_ADDR_REQ, channel);
 }
 
 void RadioBlock::setupMessage(uint16_t dest) {
@@ -508,6 +520,7 @@ void RadioBlock::send(RadioBlockRequest &request) {
 
 	// make sure packet is actually sent
 	flush();
+	delay(50);
 }
 
 
