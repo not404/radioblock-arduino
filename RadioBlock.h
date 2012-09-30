@@ -20,7 +20,8 @@
 
 #define START_BYTE 0xAB
 
-#define MAX_FRAME_DATA_SIZE 256
+/* Larger frames possible - but unlikely, so to save SRAM we set this to largest reasonable size */
+#define MAX_FRAME_DATA_SIZE 128 
 
 #define BROADCAST_ADDRESS 0xffff
 
@@ -233,6 +234,16 @@ public:
 	//setChannel(uint8_t channel);
 	//uint8_t getChannel();
 	
+	void setupMessage(uint16_t dest);
+	void addData(uint8_t code, uint8_t data);
+	void addData(uint8_t code, int8_t data);
+	void addData(uint8_t code, uint16_t data);
+	void addData(uint8_t code, int16_t data);
+	void addData(uint8_t code, uint32_t data);
+	void addData(uint8_t code, int32_t data);
+	//void addData(uint8_t code, float data);
+	void sendMessage(void);
+	
 	/**
 	 * Returns a reference to the current response
 	 * Note: once readPacket is called again this response will be overwritten!
@@ -268,7 +279,7 @@ protected:
 	void resetResponse();
 	RadioBlockRequest  _request;
 	RadioBlockResponse _response;
-	uint8_t _smallTxFrame[16];
+	uint8_t _txFrameBuffer[MAX_FRAME_DATA_SIZE];
 	uint8_t _responseFrameData[MAX_FRAME_DATA_SIZE];
 	uint8_t _pos;
 	RadioBlockCrc _txcrc;

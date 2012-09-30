@@ -200,31 +200,31 @@ RadioBlock::RadioBlock(){
 void RadioBlock::SendReq_uint8(RadioBlock_CommandId_t command, uint8_t data) {
 	resetResponse();
 	_request.setCommandId(command);
-	_request.setPayload(_smallTxFrame);
+	_request.setPayload(_txFrameBuffer);
 	_request.setPayloadLength(1);
-	_smallTxFrame[0] = data;
+	_txFrameBuffer[0] = data;
 	send(_request);
 }
 
 void RadioBlock::SendReq_uint16(RadioBlock_CommandId_t command, uint16_t data) {
 	resetResponse();
 	_request.setCommandId(command);
-	_request.setPayload(_smallTxFrame);
+	_request.setPayload(_txFrameBuffer);
 	_request.setPayloadLength(2);
-	_smallTxFrame[2]= ( data >> 8) & 0xff;
-	_smallTxFrame[3]= ( data >> 0) & 0xff;
+	_txFrameBuffer[2]= ( data >> 8) & 0xff;
+	_txFrameBuffer[3]= ( data >> 0) & 0xff;
 	send(_request);
 }
 
 void RadioBlock::SendReq_uint32(RadioBlock_CommandId_t command, uint32_t data) {
 	resetResponse();
 	_request.setCommandId(command);
-	_request.setPayload(_smallTxFrame);
+	_request.setPayload(_txFrameBuffer);
 	_request.setPayloadLength(4);
-	_smallTxFrame[0]= ( data >> 24) & 0xff;
-	_smallTxFrame[1]= ( data >> 16) & 0xff;
-	_smallTxFrame[2]= ( data >> 8) & 0xff;
-	_smallTxFrame[3]= ( data >> 0) & 0xff;
+	_txFrameBuffer[0]= ( data >> 24) & 0xff;
+	_txFrameBuffer[1]= ( data >> 16) & 0xff;
+	_txFrameBuffer[2]= ( data >> 8) & 0xff;
+	_txFrameBuffer[3]= ( data >> 0) & 0xff;
 	send(_request);
 }
 
@@ -244,16 +244,105 @@ void RadioBlock::sleepRequest(uint32_t sleepTimeMilliseconds) {
 	SendReq_uint32(APP_COMMAND_SLEEP_REQ, sleepTimeMilliseconds);
 }
 
+void RadioBlock::setupMessage(uint16_t dest) {
+	//Setup a new message
+	resetResponse();
+	_request.setCommandId(APP_COMMAND_DATA_REQ);
+	_request.setPayload(_txFrameBuffer);
+	_request.setPayloadLength(4);
+	_txFrameBuffer[0]= dest & 0xff;
+	_txFrameBuffer[1]= (dest >> 8) & 0xff;
+	_txFrameBuffer[2]= 0x01; //Ack
+	_txFrameBuffer[3]= 0x00; //Handle
+}
+
+#define TYPE_UINT8 		1
+#define TYPE_INT8		2
+#define	TYPE_UINT16		3
+#define TYPE_INT16		4
+#define TYPE_UINT32		5
+#define TYPE_INT32		6
+#define TYPE_UINT64		7
+#define TYPE_INT64		8
+#define TYPE_FLOAT		9
+#define TYPE_FIXED8_8	10
+#define TYPE_FIXED16_8	11
+#define TYPE_8BYTES		12
+#define TYPE_16BYTES	13
+#define TYPE_ASCII		14
+
+#define setup_idbyte(code, type) ((code << 4) | (type))
+
+void RadioBlock::addData(uint8_t code, uint8_t data){
+	unsigned char indx = _request.getPayloadLength();
+	_request.setPayloadLength(indx + 2);
+	
+	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_UINT8);
+	_txFrameBuffer[indx++] = data;
+}
+
+void RadioBlock::addData(uint8_t code, int8_t data){
+	unsigned char indx = _request.getPayloadLength();
+	_request.setPayloadLength(indx + 2);
+	
+	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_INT8);
+	_txFrameBuffer[indx++] = data;
+}
+
+void RadioBlock::addData(uint8_t code, uint16_t data){
+	unsigned char indx = _request.getPayloadLength();
+	_request.setPayloadLength(indx + 3);
+	
+	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_UINT16);
+	_txFrameBuffer[indx++] = (data >> 8) & 0xff;
+	_txFrameBuffer[indx++] = data & 0xff;
+}
+
+void RadioBlock::addData(uint8_t code, int16_t data){
+	unsigned char indx = _request.getPayloadLength();
+	_request.setPayloadLength(indx + 3);
+	
+	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_INT16);
+	_txFrameBuffer[indx++] = (data >> 8) & 0xff;
+	_txFrameBuffer[indx++] = data & 0xff;
+}
+
+void RadioBlock::addData(uint8_t code, uint32_t data){
+	unsigned char indx = _request.getPayloadLength();
+	_request.setPayloadLength(indx + 5);
+	
+	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_UINT32);
+	_txFrameBuffer[indx++] = (data >> 24) & 0xff;
+	_txFrameBuffer[indx++] = (data >> 16) & 0xff;
+	_txFrameBuffer[indx++] = (data >> 8) & 0xff;
+	_txFrameBuffer[indx++] = data & 0xff;
+}
+
+void RadioBlock::addData(uint8_t code, int32_t data){
+	unsigned char indx = _request.getPayloadLength();
+	_request.setPayloadLength(indx + 5);
+	
+	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_INT32);
+	_txFrameBuffer[indx++] = (data >> 24) & 0xff;
+	_txFrameBuffer[indx++] = (data >> 16) & 0xff;
+	_txFrameBuffer[indx++] = (data >> 8) & 0xff;
+	_txFrameBuffer[indx++] = data & 0xff;
+}
+
+void RadioBlock::sendMessage(void){
+	send(_request);
+}
+
 void RadioBlock::sendData(unsigned int dest, unsigned char data) {
 	resetResponse();
 	_request.setCommandId(APP_COMMAND_DATA_REQ);
-	_request.setPayload(_smallTxFrame);
+	_request.setPayload(_txFrameBuffer);
 	_request.setPayloadLength(5);
-	_smallTxFrame[0]= dest & 0xff;
-	_smallTxFrame[1]= (dest >> 8) & 0xff;
-	_smallTxFrame[2]= 0x01; //Ack
-	_smallTxFrame[3]= 0x00; //Handle
-	_smallTxFrame[4] = data;
+	_txFrameBuffer[0]= dest & 0xff;
+	_txFrameBuffer[1]= (dest >> 8) & 0xff;
+	_txFrameBuffer[2]= 0x01; //Ack
+	_txFrameBuffer[3]= 0x00; //Handle
+	_txFrameBuffer[4] = data;
 	send(_request);	
 }
 	
