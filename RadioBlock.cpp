@@ -134,27 +134,27 @@ RadioBlockSerialInterface::RadioBlockSerialInterface(int pin1, int pin2, uint8_t
 	//Pin2 = GND
 	//Pin3 = Transmit from AVR
 	//Pin4 = Receive to AVRs
-	
+
 	// default
 	_baud = 115200;
-	
+
 	if (pin2 > 0) {
 		pinMode(pin2, OUTPUT);
-		digitalWrite(pin2, LOW);		
+		digitalWrite(pin2, LOW);
 	}
-	
+
 	if (pin1 > 0) {
 		pinMode(pin1, OUTPUT);
 		digitalWrite(pin1, HIGH);
 	}
-	
+
 	_serial = &_serial_internal;
-	
+
 	_pin1 = pin1;
 	_pin2 = pin2;
 	_pin3 = pin3;
-	_pin4 = pin4;	
-	
+	_pin4 = pin4;
+
 }
 
 
@@ -177,11 +177,11 @@ bool RadioBlockSerialInterface::available() {
 
 uint8_t RadioBlockSerialInterface::read() {
 	return _serial->read();
-} 
+}
 
 void RadioBlockSerialInterface::flush() {
 	_serial->flush();
-} 
+}
 
 void RadioBlockSerialInterface::write(uint8_t val) {
 	_serial->write(val);
@@ -210,7 +210,7 @@ void RadioBlock::SendReq_uint16(RadioBlock_CommandId_t command, uint16_t data) {
 	resetResponse();
 	_request.setCommandId(command);
 	_request.setPayload(_txFrameBuffer);
-	_request.setPayloadLength(2);	
+	_request.setPayloadLength(2);
 	_txFrameBuffer[0]= ( data >> 0) & 0xff;
 	_txFrameBuffer[1]= ( data >> 8) & 0xff;
 	send(_request);
@@ -232,7 +232,7 @@ void RadioBlock::setLED(bool status) {
 	uint8_t led = 0;
 	if (status) {
 		led = 1;
-	}	
+	}
 	SendReq_uint8(APP_COMMAND_SET_LED_STATE_REQ, led);
 }
 
@@ -249,11 +249,11 @@ void RadioBlock::setAddress(uint16_t address) {
 }
 
 void RadioBlock::setPanID(uint16_t panid) {
-	SendReq_uint16(APP_COMMAND_SET_ADDR_REQ, panid);
+	SendReq_uint16(APP_COMMAND_SET_PANID_REQ, panid);
 }
 
 void RadioBlock::setChannel(uint8_t channel) {
-	SendReq_uint8(APP_COMMAND_SET_ADDR_REQ, channel);
+	SendReq_uint8(APP_COMMAND_SET_CHANNEL_REQ, channel);
 }
 
 void RadioBlock::setupMessage(uint16_t dest) {
@@ -288,7 +288,7 @@ void RadioBlock::setupMessage(uint16_t dest) {
 void RadioBlock::addData(uint8_t code, uint8_t data){
 	unsigned char indx = _request.getPayloadLength();
 	_request.setPayloadLength(indx + 2);
-	
+
 	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_UINT8);
 	_txFrameBuffer[indx++] = data;
 }
@@ -296,7 +296,7 @@ void RadioBlock::addData(uint8_t code, uint8_t data){
 void RadioBlock::addData(uint8_t code, int8_t data){
 	unsigned char indx = _request.getPayloadLength();
 	_request.setPayloadLength(indx + 2);
-	
+
 	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_INT8);
 	_txFrameBuffer[indx++] = data;
 }
@@ -304,7 +304,7 @@ void RadioBlock::addData(uint8_t code, int8_t data){
 void RadioBlock::addData(uint8_t code, uint16_t data){
 	unsigned char indx = _request.getPayloadLength();
 	_request.setPayloadLength(indx + 3);
-	
+
 	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_UINT16);
 	_txFrameBuffer[indx++] = (data >> 8) & 0xff;
 	_txFrameBuffer[indx++] = data & 0xff;
@@ -313,7 +313,7 @@ void RadioBlock::addData(uint8_t code, uint16_t data){
 void RadioBlock::addData(uint8_t code, int16_t data){
 	unsigned char indx = _request.getPayloadLength();
 	_request.setPayloadLength(indx + 3);
-	
+
 	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_INT16);
 	_txFrameBuffer[indx++] = (data >> 8) & 0xff;
 	_txFrameBuffer[indx++] = data & 0xff;
@@ -322,7 +322,7 @@ void RadioBlock::addData(uint8_t code, int16_t data){
 void RadioBlock::addData(uint8_t code, uint32_t data){
 	unsigned char indx = _request.getPayloadLength();
 	_request.setPayloadLength(indx + 5);
-	
+
 	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_UINT32);
 	_txFrameBuffer[indx++] = (data >> 24) & 0xff;
 	_txFrameBuffer[indx++] = (data >> 16) & 0xff;
@@ -333,7 +333,7 @@ void RadioBlock::addData(uint8_t code, uint32_t data){
 void RadioBlock::addData(uint8_t code, int32_t data){
 	unsigned char indx = _request.getPayloadLength();
 	_request.setPayloadLength(indx + 5);
-	
+
 	_txFrameBuffer[indx++] = setup_idbyte(code, TYPE_INT32);
 	_txFrameBuffer[indx++] = (data >> 24) & 0xff;
 	_txFrameBuffer[indx++] = (data >> 16) & 0xff;
@@ -355,9 +355,9 @@ void RadioBlock::sendData(unsigned int dest, unsigned char data) {
 	_txFrameBuffer[2]= 0x01; //Ack
 	_txFrameBuffer[3]= 0x00; //Handle
 	_txFrameBuffer[4] = data;
-	send(_request);	
+	send(_request);
 }
-	
+
 bool RadioBlock::available() {
 	return false;
 }
@@ -409,7 +409,7 @@ bool RadioBlock::readPacket(int timeout) {
     return false;
 }
 
-void RadioBlock::resetResponse() {	
+void RadioBlock::resetResponse() {
 	_response.reset();
 }
 
@@ -432,17 +432,17 @@ void RadioBlock::readPacket() {
 
 		        break;
 			case 1:
-				// length 
+				// length
 				_response.setPacketLength(b);
 				_pos++;
 				break;
 
 			case 2:
 				_response.setCommandId((RadioBlock_CommandId_t)b);
-				_pos++;				
-				_crc.addByte(b);				
+				_pos++;
+				_crc.addByte(b);
 				break;
-				
+
 			default:
 				// starts at third byte
 
@@ -452,20 +452,20 @@ void RadioBlock::readPacket() {
 					return;
 				}
 
-				
+
 				//PacketLength only includes commandid+payload, need to compensate for length+
 				//start byte, then subtract one due to fact pos hasn't been incremented yet
-				if (_pos == (_response.getPacketLength() + 3 - 1)) {					
+				if (_pos == (_response.getPacketLength() + 3 - 1)) {
 					_response.setCrc(b);
 					_pos++;
-				} else if (_pos == (_response.getPacketLength() + 4 - 1)) {					
+				} else if (_pos == (_response.getPacketLength() + 4 - 1)) {
 					_response.setCrc(_response.getCrc() | ((uint16_t)b << 8));
-									
-					if (_crc.getCrc() == _response.getCrc()) {						
+
+					if (_crc.getCrc() == _response.getCrc()) {
 						_response.setAvailable(true);
 						_response.setErrorCode(APP_STATUS_SUCESS);
 					} else {
-						// checksum failed						
+						// checksum failed
 						_response.setAvailable(true);
 						_response.setErrorCode(APP_STATUS_INVALID_CRC);
 						_response.setCrc(_crc.getCrc());
@@ -484,9 +484,9 @@ void RadioBlock::readPacket() {
 					// add to packet array, starting with the third byte
 					_response.getFrameData()[_pos - 3] = b;
 					_pos++;
-					
+
 					_crc.addByte(b);
-					
+
 				}
         }
     }
@@ -501,16 +501,16 @@ void RadioBlock::send(RadioBlockRequest &request) {
 
 	//Starting CRC of 0x1234
 	_txcrc.reset();
-	
+
 	//Send command ID
 	uint8_t data = (uint8_t)request.getCommandId();
-   
-	for (int i = 0; i <= request.getPayloadLength(); i++) {				
+
+	for (int i = 0; i <= request.getPayloadLength(); i++) {
 		write(data);
-		
+
 		//Perform CRC calculation while sending
 		_txcrc.addByte(data);
-		
+
 		data = *(request.getPayloadData() + i);
 	}
 
